@@ -3,16 +3,11 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
     public function up(): void
     {
-        // Drop lingering PostgreSQL ENUM types (survive DROP TABLE / migrate:fresh)
-        DB::statement("DROP TYPE IF EXISTS rentals_status_enum CASCADE");
-        DB::statement("DROP TYPE IF EXISTS boats_status_enum CASCADE");
-
         Schema::create('rentals', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('boat_id')->index();
@@ -22,7 +17,7 @@ return new class extends Migration
             $table->timestamp('ended_at')->nullable();
             $table->timestamp('actual_end_at')->nullable();
             $table->integer('overtime_seconds')->default(0);
-            $table->enum('status', ['active', 'completed', 'overdue', 'overridden'])->default('active')->index();
+            $table->string('status', 30)->default('active')->index();
             $table->unsignedBigInteger('ended_by')->nullable();
             $table->boolean('customer_returned')->nullable();
             $table->text('notes')->nullable();
@@ -35,7 +30,7 @@ return new class extends Migration
             $table->id();
             $table->integer('boat_number')->unique()->index();
             $table->string('name')->nullable();
-            $table->enum('status', ['available', 'occupied', 'warning', 'awaiting_confirmation', 'overdue', 'maintenance'])
+            $table->string('status', 30)
                 ->default('available')->index();
             $table->unsignedBigInteger('current_rental_id')->nullable();
             $table->string('color_hex', 7)->nullable();
@@ -63,9 +58,5 @@ return new class extends Migration
         });
         Schema::dropIfExists('boats');
         Schema::dropIfExists('rentals');
-
-        // Clean up PostgreSQL ENUM types
-        DB::statement("DROP TYPE IF EXISTS rentals_status_enum CASCADE");
-        DB::statement("DROP TYPE IF EXISTS boats_status_enum CASCADE");
     }
 };

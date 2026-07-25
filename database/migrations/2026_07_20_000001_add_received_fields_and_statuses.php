@@ -23,8 +23,9 @@ return new class extends Migration
         // SQLite stores ENUM as TEXT + CHECK constraint, so the original
         // CREATE TABLE CHECK constraint still restricts status values.
         // See migration 2026_07_20_000002 for the SQLite fix.
+        // PostgreSQL: now uses string columns, no ALTER needed.
         // MySQL: update ENUM values
-        if (DB::connection()->getDriverName() !== 'sqlite') {
+        if (DB::connection()->getDriverName() === 'mysql') {
             DB::statement("ALTER TABLE rentals MODIFY COLUMN status ENUM('active','completed','overdue','overridden','awaiting_confirmation','ended') NOT NULL DEFAULT 'active'");
             DB::statement("ALTER TABLE boats MODIFY COLUMN status ENUM('available','occupied','warning','awaiting_confirmation','overdue','maintenance','ended','time_up') NOT NULL DEFAULT 'available'");
         }
