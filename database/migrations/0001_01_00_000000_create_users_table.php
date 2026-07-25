@@ -3,11 +3,15 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
     public function up(): void
     {
+        // Drop lingering PostgreSQL ENUM types (survive DROP TABLE / migrate:fresh)
+        DB::statement("DROP TYPE IF EXISTS users_role_enum CASCADE");
+
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
@@ -43,5 +47,8 @@ return new class extends Migration
         Schema::dropIfExists('personal_access_tokens');
         Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('users');
+
+        // Clean up PostgreSQL ENUM type
+        DB::statement("DROP TYPE IF EXISTS users_role_enum CASCADE");
     }
 };

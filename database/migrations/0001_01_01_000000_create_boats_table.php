@@ -3,11 +3,16 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
     public function up(): void
     {
+        // Drop lingering PostgreSQL ENUM types (survive DROP TABLE / migrate:fresh)
+        DB::statement("DROP TYPE IF EXISTS rentals_status_enum CASCADE");
+        DB::statement("DROP TYPE IF EXISTS boats_status_enum CASCADE");
+
         Schema::create('rentals', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('boat_id')->index();
@@ -58,5 +63,9 @@ return new class extends Migration
         });
         Schema::dropIfExists('boats');
         Schema::dropIfExists('rentals');
+
+        // Clean up PostgreSQL ENUM types
+        DB::statement("DROP TYPE IF EXISTS rentals_status_enum CASCADE");
+        DB::statement("DROP TYPE IF EXISTS boats_status_enum CASCADE");
     }
 };
