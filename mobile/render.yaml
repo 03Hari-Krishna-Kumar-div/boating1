@@ -1,0 +1,43 @@
+services:
+  - type: web
+    name: boat-rental-api
+    env: php
+    buildCommand: |
+      composer install --no-dev --optimize-autoloader
+      php artisan config:cache
+      php artisan route:cache
+      php artisan view:cache
+      php artisan migrate --force
+    startCommand: php artisan serve --host=0.0.0.0 --port=$PORT
+    healthCheckPath: /up
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: APP_KEY
+        generateValue: true
+      - key: APP_URL
+        value: https://boat-rental-api.onrender.com
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_URL
+        fromDatabase:
+          name: boat-rental-db
+          property: connectionString
+      - key: SANCTUM_STATEFUL_DOMAINS
+        value: ""
+      - key: SESSION_DRIVER
+        value: cookie
+      - key: CACHE_DRIVER
+        value: file
+      - key: QUEUE_CONNECTION
+        value: sync
+      - key: LOG_CHANNEL
+        value: stack
+
+databases:
+  - name: boat-rental-db
+    databaseType: postgresql
+    plan: free
+    ipAllowList: []
