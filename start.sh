@@ -19,7 +19,7 @@ done
 
 # ─── Run migrations ─────────────────────────────────────────────────────────
 echo "🔄 Running database migrations..."
-php artisan migrate --force
+php artisan migrate:fresh --force
 
 # ─── Seed database (only if users table is empty) ───────────────────────────
 echo "🌱 Checking if database needs seeding..."
