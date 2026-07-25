@@ -17,6 +17,21 @@ until php artisan migrate:status >/dev/null 2>&1; do
     sleep 2
 done
 
+# ─── Reset database schema if tables are in a broken state ─────────────────
+echo "🔍 Checking database state..."
+table_count=$(php artisan tinker --execute="echo count(\Illuminate\Support\Facades\DB::select('SELECT table_name FROM information_schema.tables WHERE table_schema = \'public\''));" 2>/dev/null || echo "0")
+migration_status=$(php artisan migrate:status 2>/dev/null | grep -c "No" || echo "0")
+if [ "$table_count" -gt 0 ] && [ "$migration_status" -gt 0 ]; then
+    echo "⚠️  Database has tables but migrations incomplete — resetting schema..."
+    php artisan tinker --execute="
+        \Illuminate\Support\Facades\DB::statement('DROP SCHEMA public CASCADE');
+        \Illuminate\Support\Facades\DB::statement('CREATE SCHEMA public');
+        \Illuminate\Support\Facades\DB::statement('GRANT ALL ON SCHEMA public TO neondb_owner');
+        \Illuminate\Support\Facades\DB::statement('GRANT ALL ON SCHEMA public TO public');
+    " 2>/dev/null || true
+    echo "   Schema reset complete."
+fi
+
 # ─── Run migrations ─────────────────────────────────────────────────────────
 echo "🔄 Running database migrations..."
 php artisan migrate --force
