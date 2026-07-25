@@ -3,9 +3,9 @@ set -e
 
 echo "Starting Dhanalakshmi Boating application..."
 
-# Wait for database to be ready
+# Wait for database to be ready (Neon free tier needs time to wake up from sleep)
 echo "Waiting for database connection..."
-max_attempts=30
+max_attempts=60
 attempt=0
 until php artisan migrate:status >/dev/null 2>&1; do
     attempt=$((attempt + 1))
@@ -13,11 +13,11 @@ until php artisan migrate:status >/dev/null 2>&1; do
         echo "Database not reachable after $max_attempts attempts. Continuing anyway..."
         break
     fi
-    echo "   Attempt $attempt/$max_attempts - waiting 2s..."
-    sleep 2
+    echo "   Attempt $attempt/$max_attempts - waiting 3s..."
+    sleep 3
 done
 
-# Run migrations (fresh on first deploy, incremental after)
+# Run migrations
 echo "Running database migrations..."
 php artisan migrate --force
 
