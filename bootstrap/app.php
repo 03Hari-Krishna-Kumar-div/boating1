@@ -3,6 +3,7 @@
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\ActiveUserMiddleware;
 use App\Http\Middleware\CheckSessionTimeout;
+use App\Http\Middleware\TrustProxies;
 use App\Mobile\Middleware\EnsureUserIsActive;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -40,6 +41,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->web([
+            TrustProxies::class,
             \App\Http\Middleware\CheckSessionTimeout::class,
         ]);
 

@@ -54,6 +54,17 @@ php artisan storage:link --force 2>/dev/null || true
 # Clear and rebuild caches
 echo ""
 echo "[5/6] Caching configuration and routes..."
+
+# Fix APP_URL: force https if it starts with http:// (Render reverse proxy issue)
+if [ -n "$APP_URL" ] && [[ "$APP_URL" == http://* ]]; then
+    FIXED_URL="${APP_URL/http:\/\//https:\/\/}"
+    export APP_URL="$FIXED_URL"
+    echo "   Fixed APP_URL: $APP_URL (forced HTTPS)"
+fi
+
+# Ensure SESSION_SECURE_COOKIE is true in production
+export SESSION_SECURE_COOKIE=true
+
 php artisan config:cache 2>&1
 php artisan route:cache 2>&1
 php artisan view:cache 2>&1
