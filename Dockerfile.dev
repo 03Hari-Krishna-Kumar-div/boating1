@@ -20,18 +20,19 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
 
 WORKDIR /var/www/html
 
-# Install dependencies first (for Docker layer caching)
-COPY composer.json composer.lock* ./
-RUN composer install --no-scripts --no-autoloader --no-interaction --no-progress
-
-COPY package.json package-lock.json* ./
-RUN npm install
-
-# Copy the rest of the application
+# Copy everything
 COPY . .
 
-# Now run post-install scripts
-RUN composer dump-autoload --optimize
+# Clear any stale cached configs from host
+RUN rm -rf bootstrap/cache/*
+
+# Install PHP dependencies (keep dev deps in dev container)
+RUN composer install --optimize-autoloader --no-interaction --no-progress
+
+# Install JS dependencies inside the container (Linux native modules)
+RUN rm -rf node_modules && npm install && npm run build
+
+# Setup storage and cache directories
 RUN mkdir -p storage/app/public storage/framework/{cache/data,sessions,testing,views} \
     && mkdir -p storage/logs \
     && mkdir -p bootstrap/cache \
@@ -41,5 +42,5 @@ RUN chmod +x start.sh
 
 EXPOSE 8000
 
-# Start both Vite dev server and Laravel artisan server
-CMD ["sh", "-c", "php artisan migrate --force 2>&1; php artisan db:seed --force 2>&1 || true; npm run dev -- --host 0.0.0.0 --port 5173 & exec php artisan serve --host=0.0.0.0 --port=8000"]
+# Run migrations and start server (Vite assets are pre-built, no dev server needed)
+CMD ["sh", "-c", "php artisan migrate --force 2>&1 && php artisan serve --host=0.0.0.0 --port=8000"]

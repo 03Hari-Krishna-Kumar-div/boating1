@@ -10,6 +10,7 @@ services:
     volumes:
       - .:/var/www/html
       - vendor_data:/var/www/html/vendor
+      - node_modules_data:/var/www/html/node_modules
     environment:
       - APP_NAME=Dhanalakshmi Boating
       - APP_ENV=local
@@ -43,3 +44,4 @@ services:
 
 volumes:
   vendor_data:
+  node_modules_data:

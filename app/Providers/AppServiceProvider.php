@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\Boat;
 use App\Models\Rental;
+use App\Models\Setting;
 use App\Models\User;
 use App\Observers\BoatObserver;
 use App\Observers\RentalObserver;
@@ -39,6 +40,26 @@ class AppServiceProvider extends ServiceProvider
             URL::forceScheme('https');
             // Also force the config value for @vite directive and route generation
             config(['app.url' => preg_replace('/^http:/', 'https:', config('app.url'))]);
+        }
+
+        // Load settings from DB and merge into brms config
+        // This ensures saved settings (e.g. rental_duration_minutes) are used everywhere,
+        // not just the .env defaults.
+        try {
+            $settings = Setting::pluck('value', 'key')->toArray();
+            $brmsKeys = [
+                'rental_duration_minutes',
+                'warning_minutes',
+                'alarm_interval_seconds',
+                'session_timeout_minutes',
+            ];
+            foreach ($brmsKeys as $key) {
+                if (isset($settings[$key])) {
+                    config(["brms.{$key}" => (int) $settings[$key]]);
+                }
+            }
+        } catch (\Exception $e) {
+            // Settings table may not exist yet during migration — ignore
         }
         // Register observers
         Boat::observe(BoatObserver::class);
