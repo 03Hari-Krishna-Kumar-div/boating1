@@ -35,11 +35,22 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        // Force HTTPS URL on Render (Render terminates SSL and sends X-Forwarded-Proto)
-        if (str_contains(request()->getHttpHost(), 'onrender.com') || env('APP_ENV') === 'production') {
+        // Force HTTPS on production/Render — prevents 419 CSRF errors on mobile
+        // Render terminates SSL and sends X-Forwarded-Proto header
+        $request = request();
+        $isSecure = $request->isSecure()
+            || $request->header('X-Forwarded-Proto') === 'https'
+            || str_contains($request->getHttpHost(), 'onrender.com')
+            || config('app.env') === 'production';
+
+        if ($isSecure) {
             URL::forceScheme('https');
-            // Also force the config value for @vite directive and route generation
-            config(['app.url' => preg_replace('/^http:/', 'https:', config('app.url'))]);
+            // Force the config value so route(), url(), and @vite all use HTTPS
+            $currentUrl = config('app.url');
+            config(['app.url' => preg_replace('/^http:/', 'https:', $currentUrl)]);
+            // Ensure session cookie is secure
+            config(['session.secure' => true]);
+            config(['session.domain' => null]); // Let browser auto-detect domain
         }
 
         // Load settings from DB and merge into brms config
