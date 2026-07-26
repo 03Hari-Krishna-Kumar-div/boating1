@@ -15,15 +15,17 @@ services:
       - key: DB_CONNECTION
         value: pgsql
       - key: DB_HOST
-        value: ep-misty-grass-az6mgq5f.c-3.ap-southeast-1.aws.neon.tech
+        value: ep-wandering-dew-azcjxici-pooler.c-3.ap-southeast-1.aws.neon.tech
       - key: DB_PORT
         value: "5432"
       - key: DB_DATABASE
-        value: neondb
+        value: brms
       - key: DB_USERNAME
         value: neondb_owner
       - key: DB_PASSWORD
-        value: npg_Nfq4SYQHl9de
+        value: npg_auTExkB2zYP9
+      - key: DB_SSLMODE
+        value: require
       - key: SESSION_DRIVER
         value: database
       - key: CACHE_STORE

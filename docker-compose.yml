@@ -16,11 +16,12 @@ services:
       - APP_DEBUG=true
       - APP_URL=http://localhost:8000
       - DB_CONNECTION=pgsql
-      - DB_HOST=ep-misty-grass-az6mgq5f.c-3.ap-southeast-1.aws.neon.tech
+      - DB_HOST=ep-wandering-dew-azcjxici-pooler.c-3.ap-southeast-1.aws.neon.tech
       - DB_PORT=5432
-      - DB_DATABASE=neondb
+      - DB_DATABASE=brms
       - DB_USERNAME=neondb_owner
-      - DB_PASSWORD=npg_Nfq4SYQHl9de
+      - DB_PASSWORD=npg_auTExkB2zYP9
+      - DB_SSLMODE=require
       - SESSION_DRIVER=database
       - CACHE_STORE=database
       - QUEUE_CONNECTION=database
