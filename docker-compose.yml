@@ -1,0 +1,44 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: boating-local
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/var/www/html
+      - vendor_data:/var/www/html/vendor
+    environment:
+      - APP_NAME=Dhanalakshmi Boating
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - APP_URL=http://localhost:8000
+      - DB_CONNECTION=pgsql
+      - DB_HOST=ep-misty-grass-az6mgq5f.c-3.ap-southeast-1.aws.neon.tech
+      - DB_PORT=5432
+      - DB_DATABASE=neondb
+      - DB_USERNAME=neondb_owner
+      - DB_PASSWORD=npg_Nfq4SYQHl9de
+      - SESSION_DRIVER=database
+      - CACHE_STORE=database
+      - QUEUE_CONNECTION=database
+      - SESSION_DOMAIN=
+      - SESSION_SECURE_COOKIE=false
+      - SANCTUM_STATEFUL_DOMAINS=127.0.0.1:8000,localhost:8000
+      - BRMS_RENTAL_DURATION=45
+      - BRMS_WARNING_MINUTES=5
+      - BRMS_ALARM_INTERVAL=1
+      - BRMS_SESSION_TIMEOUT=120
+      - BRMS_ONLINE_THRESHOLD=10
+      - BRMS_PAGINATION=50
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/up"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+volumes:
+  vendor_data:
