@@ -7,15 +7,23 @@ services:
       - key: APP_KEY
         generateValue: true
       - key: APP_URL
-        sync: false
+        value: https://boating1.onrender.com
       - key: APP_ENV
         value: production
       - key: APP_DEBUG
         value: false
       - key: DB_CONNECTION
         value: pgsql
-      - key: DB_URL
-        sync: false
+      - key: DB_HOST
+        value: ep-misty-grass-az6mgq5f.c-3.ap-southeast-1.aws.neon.tech
+      - key: DB_PORT
+        value: "5432"
+      - key: DB_DATABASE
+        value: neondb
+      - key: DB_USERNAME
+        value: neondb_owner
+      - key: DB_PASSWORD
+        value: npg_Nfq4SYQHl9de
       - key: SESSION_DRIVER
         value: database
       - key: CACHE_STORE
@@ -27,11 +35,11 @@ services:
       - key: SESSION_SECURE_COOKIE
         value: true
       - key: SANCTUM_STATEFUL_DOMAINS
-        sync: false
+        value: boating1.onrender.com
       - key: LOG_CHANNEL
         value: stack
       - key: LOG_LEVEL
-        value: warning
+        value: debug
       - key: MAIL_MAILER
         value: log
     healthCheckPath: /up

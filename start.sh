@@ -1,45 +1,79 @@
 #!/bin/bash
-set -e
 
-echo "Starting Dhanalakshmi Boating application..."
+echo "========================================="
+echo "  Dhanalakshmi Boating - Starting up"
+echo "========================================="
 
 # Wait for database to be ready (Neon free tier needs time to wake up from sleep)
-echo "Waiting for database connection..."
-max_attempts=60
+echo ""
+echo "[1/6] Waiting for database connection..."
+max_attempts=90
 attempt=0
 until php artisan migrate:status >/dev/null 2>&1; do
     attempt=$((attempt + 1))
     if [ "$attempt" -ge "$max_attempts" ]; then
-        echo "Database not reachable after $max_attempts attempts. Continuing anyway..."
+        echo "   WARNING: Database not reachable after $max_attempts attempts (4.5 min)."
+        echo "   Continuing anyway and will attempt migration..."
         break
     fi
-    echo "   Attempt $attempt/$max_attempts - waiting 3s..."
+    if [ $((attempt % 10)) -eq 0 ]; then
+        echo "   Attempt $attempt/$max_attempts - still waiting..."
+    fi
     sleep 3
 done
 
+if [ "$attempt" -lt "$max_attempts" ]; then
+    echo "   Database connected after $attempt attempts."
+fi
+
 # Run migrations
-echo "Running database migrations..."
-php artisan migrate --force
+echo ""
+echo "[2/6] Running database migrations..."
+php artisan migrate --force 2>&1 | head -30
 
 # Seed database (only if users table is empty)
-echo "Checking if database needs seeding..."
-user_count=$(php artisan tinker --execute="echo App\Models\User::count();" 2>/dev/null || echo "0")
-if [ "$user_count" = "0" ]; then
-    echo "   Seeding database with default data..."
-    php artisan db:seed --force
+echo ""
+echo "[3/6] Checking if database needs seeding..."
+user_count=$(php artisan tinker --execute="echo App\Models\User::count();" 2>/dev/null || echo "error")
+if [ "$user_count" = "error" ]; then
+    echo "   WARNING: Could not check user count. Attempting seed anyway..."
+    php artisan db:seed --force 2>&1 || echo "   Seed skipped (may already have data)."
+elif [ "$user_count" = "0" ]; then
+    echo "   Database has no users. Seeding..."
+    php artisan db:seed --force 2>&1
+    echo "   Seeding complete."
 else
     echo "   Database already has $user_count users. Skipping seed."
 fi
 
 # Create storage link
+echo ""
+echo "[4/6] Creating storage link..."
 php artisan storage:link --force 2>/dev/null || true
 
 # Clear and rebuild caches
-echo "Caching configuration..."
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
+echo ""
+echo "[5/6] Caching configuration and routes..."
+php artisan config:cache 2>&1
+php artisan route:cache 2>&1
+php artisan view:cache 2>&1
 
-# Start the server
-echo "Application ready! Starting server on port ${PORT:-8000}..."
+# Verify DB connection with a quick test
+echo ""
+echo "[6/6] Verifying database..."
+php artisan tinker --execute="
+try {
+    \$boats = \App\Models\Boat::count();
+    \$users = \App\Models\User::count();
+    echo \"DB OK: \$users users, \$boats boats\";
+} catch (Exception \$e) {
+    echo 'DB ERROR: ' . \$e->getMessage();
+}
+" 2>/dev/null || echo "   Could not verify DB."
+
+echo ""
+echo "========================================="
+echo "  Application ready!"
+echo "  Starting server on port ${PORT:-8000}"
+echo "========================================="
 exec php artisan serve --host=0.0.0.0 --port="${PORT:-8000}"
