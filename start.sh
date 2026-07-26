@@ -62,9 +62,13 @@ if [ -n "$APP_URL" ] && [[ "$APP_URL" == http://* ]]; then
     echo "   Fixed APP_URL: $APP_URL (forced HTTPS)"
 fi
 
-# Ensure SESSION_SECURE_COOKIE is true in production
+# Fix session settings for mobile browser compatibility
+# SESSION_DOMAIN must be empty/null — mobile browsers drop cookies with parent domain
+export SESSION_DOMAIN=""
 export SESSION_SECURE_COOKIE=true
+export SESSION_SAME_SITE=lax
 
+php artisan config:clear 2>&1 || true
 php artisan config:cache 2>&1
 php artisan route:cache 2>&1
 php artisan view:cache 2>&1
